@@ -118,6 +118,14 @@ void setup() {
    compost_start.Day    = EEPROM.read(3);
    compost_start.Month  = EEPROM.read(4);
    compost_start.Year   = EEPROM.read(5);
+   
+  String saveTime = String( compost_start.Hour) + ":" + compost_start.Minute + ":" + compost_start.Second;
+  String saveDate = String(compost_start.Day) + " " + compost_start.Month + " " + compost_start.Year;
+  Serial.print("save time: ");
+  Serial.print(saveTime);
+  Serial.print(" ");
+  Serial.print(saveDate);
+  Serial.println();
 }
 
 void loop() {
@@ -208,6 +216,8 @@ void loop() {
 
   if (digitalRead(dateResetPin) == LOW)
   {
+    Serial.println("Time reset");
+    
     EEPROM.write(0, hour());
     EEPROM.write(1, minute());
     EEPROM.write(2, second());
@@ -215,6 +225,22 @@ void loop() {
     EEPROM.write(4, month());
     EEPROM.write(5, year() - 1970);
     EEPROM.commit();
+    
+    compost_start.Hour   = EEPROM.read(0);
+    compost_start.Minute = EEPROM.read(1);
+    compost_start.Second = EEPROM.read(2);
+    compost_start.Day    = EEPROM.read(3);
+    compost_start.Month  = EEPROM.read(4);
+    compost_start.Year   = EEPROM.read(5);
+   
+    String saveTime = String( compost_start.Hour) + ":" + compost_start.Minute + ":" + compost_start.Second;
+    String saveDate = String(compost_start.Day) + " " + compost_start.Month + " " + compost_start.Year;
+    Serial.print("save time: ");
+    Serial.print(saveTime);
+    Serial.print(" ");
+    Serial.print(saveDate);
+    Serial.println();
+  
     while(digitalRead(dateResetPin) == LOW);
   }
 }
