@@ -3,6 +3,9 @@
 #include <Wire.h>
 #include <Servo.h>
 #include "DHTesp.h"
+#include <EEPROM.h>
+
+#define EEPROM_SIZE 1
 
 #define BLYNK_PRINT Serial
 
@@ -37,6 +40,8 @@ BlynkTimer timer;
 WidgetRTC rtc;
 
 uint32_t delaytime;
+tmElements_t compost_start;
+
 
 BLYNK_CONNECTED() {
   // Synchronize time on connection
@@ -45,16 +50,8 @@ BLYNK_CONNECTED() {
 
 void compost_time()
 {
-  tmElements_t T1;
   tmElements_t T2;
-
-  T1.Hour = 0;
-  T1.Minute = 0;
-  T1.Second = 0;
-  T1.Day = 1;
-  T1.Month = 1;
-  T1.Year = 2020 - 1970; // because Year is offset from 1970
-
+  
   T2.Hour = hour();
   T2.Minute = minute();
   T2.Second = second();
@@ -71,12 +68,8 @@ void compost_time()
   Serial.println();
     
   // convert T1 and T2 to seconds since 1/1/1970
-  time_t T1sec = makeTime( T1 );
+  time_t T1sec = makeTime( compost_start );
   time_t T2sec = makeTime( T2 );
-  Serial.print( "T1 in seconds since 1970: " );
-  Serial.println( T1sec );
-  Serial.print( "T2 in seconds since 1970: " );
-  Serial.println( T2sec );
 
   // differences in seconds
   int32_t diff = T2sec - T1sec;
@@ -87,7 +80,7 @@ void compost_time()
   uint8_t minutes = (diff / 60) % 60;
   uint8_t seconds = diff % 60;
   
-  float days = hours / 24 ;
+  float days = hours / 24.0 ;
   
   Serial.print( days );
   Serial.print( " days(s), " );
@@ -105,6 +98,7 @@ void compost_time()
 void setup() {
   Serial.begin(115200);
 
+  EEPROM.begin(EEPROM_SIZE);
   Blynk.begin(auth, ssid, pass);
   lcd.clear();
 
@@ -115,6 +109,13 @@ void setup() {
   servoMotor.attach(servoPin);
 
   setSyncInterval(5 * 60); // Sync interval in seconds (5 minutes)
+  
+   compost_start.Hour   = EEPROM.read(0);
+   compost_start.Minute = EEPROM.read(1);
+   compost_start.Second = EEPROM.read(2);
+   compost_start.Day    = EEPROM.read(3);
+   compost_start.Month  = EEPROM.read(4);
+   compost_start.Year   = EEPROM.read(5);
 }
 
 void loop() {
@@ -202,4 +203,21 @@ void loop() {
     Serial.println("----------------------------------");
     delay(dht.getMinimumSamplingPeriod());
   }
+}
+
+BLYNK_WRITE(V6)
+{
+  int i = param.asInt();
+  
+  if (i == 1)
+  {
+    EEPROM.write(0, hour());
+    EEPROM.write(1, minute());
+    EEPROM.write(2, second());
+    EEPROM.write(3, day());
+    EEPROM.write(4, month());
+    EEPROM.write(5, year() - 1970);
+    EEPROM.commit();
+  }
+  
 }
