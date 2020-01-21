@@ -28,6 +28,7 @@ char pass[] = "gokulraja";
 #define servoPin    5
 #define soliMoiPin 34
 #define methenePin 35
+#define dateResetPin 25
 
 DHTesp dht;
 //Temperature
@@ -104,6 +105,7 @@ void setup() {
 
   pinMode(floatPin, INPUT_PULLUP); //External pull good
   pinMode(pumpPin, OUTPUT);
+  pinMode(dateResetPin, INPUT_PULLUP);
   sensors.begin();
   dht.setup(DHTpin, DHTesp::DHT11);
   servoMotor.attach(servoPin);
@@ -199,17 +201,12 @@ void loop() {
       Serial.println("-> VENDILATION OFF ");
     }
 
-
+    
     Serial.println("----------------------------------");
     delay(dht.getMinimumSamplingPeriod());
   }
-}
 
-BLYNK_WRITE(V6)
-{
-  int i = param.asInt();
-  
-  if (i == 1)
+  if (digitalRead(dateResetPin) == LOW)
   {
     EEPROM.write(0, hour());
     EEPROM.write(1, minute());
@@ -218,6 +215,7 @@ BLYNK_WRITE(V6)
     EEPROM.write(4, month());
     EEPROM.write(5, year() - 1970);
     EEPROM.commit();
+    while(digitalRead(dateResetPin) == LOW);
   }
-  
 }
+
