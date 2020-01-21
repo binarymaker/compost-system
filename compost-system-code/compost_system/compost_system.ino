@@ -82,10 +82,13 @@ void compost_time()
   int32_t diff = T2sec - T1sec;
 
   // show difference in hours, minutes and seconds
-  uint32_t days = diff / 24 ;
-  uint32_t hours = (diff / 3600) % 24;
+  
+  uint32_t hours = (diff / 3600);
   uint8_t minutes = (diff / 60) % 60;
   uint8_t seconds = diff % 60;
+  
+  float days = hours / 24 ;
+  
   Serial.print( days );
   Serial.print( " days(s), " );
   Serial.print( hours );
