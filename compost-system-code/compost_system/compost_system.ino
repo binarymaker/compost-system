@@ -5,7 +5,7 @@
 #include "DHTesp.h"
 #include <EEPROM.h>
 
-#define EEPROM_SIZE 1
+#define EEPROM_SIZE 64
 
 #define BLYNK_PRINT Serial
 
